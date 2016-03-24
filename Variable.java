@@ -21,6 +21,12 @@ public class Variable {
 		bitValue = nBit;
 	}
 	
+	public Variable(char charV) {
+		charValue = charV;
+		bitValue = -1;
+		isInverted = false;
+	}
+	
 	public Variable(Character value, boolean inverted) {
 		charValue = value;
 		isInverted = inverted;
