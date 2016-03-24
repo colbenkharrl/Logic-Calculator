@@ -110,12 +110,12 @@ public class Equation {
 //- - - OPERATE - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 	public EquationList<Variable> operate(EquationList<Variable> inputEquation) {
 		
-		EquationList<Variable> returnValue = inputEquation;
+		EquationList<Variable> returnValue = inputEquation;								
 		while (hasOperator(returnValue, '*')) {
 			multiply(returnValue);
-		}
+		}								
 		while(hasOperator(returnValue, '+')) {
-			add(returnValue);
+			add(returnValue);								
 		}
 		return returnValue;
 	}
