@@ -1,3 +1,5 @@
+//	Colben Kharrl, March 18, 2016. Truth Table Generator.
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -6,44 +8,59 @@ import java.io.*;
 
 public class Equation {
 
+//- - - INSTANCE VARIABLE - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 	private EquationList<Variable> currentEquation;
 	private EquationList<Variable> knownVariables;
 	private static Character[] acceptedNonADNumbers = {'+', '*', '(', ')'};
 	private ArrayList<String> minterms;
 	private ArrayList<String> maxterms;
-
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  - - - - - - - - -
 	
+//- - - CONSTRUCTOR - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 	public Equation(String input) {
+		
 		currentEquation = new EquationList<Variable>();
 		knownVariables = new EquationList<Variable>();
 		currentEquation = parseEquation(input);
 		minterms = new ArrayList<String>();
 		maxterms = new ArrayList<String>();
 	}
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  - - - - - - - - -
 	
+//- - - GETTER - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 	public EquationList<Variable> getVariables() {
+		
 		Collections.sort(knownVariables, new VariableComparator());
 		return knownVariables;
 	}
 
 	public int getVariableNumber() {
+		
 		return knownVariables.size();
 	}
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  - - - - - - - - -	
 	
+//- - - PARSE - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 	private EquationList<Variable> parseEquation(String input) {
 		
-		System.out.println("Beginning Equation Parse...");
+		EquationList<Variable> returnArray = stringToRawEquation(input);
+		addMultiplicationOperands(returnArray);
+		return returnArray;
+	}
+	
+	private EquationList<Variable> stringToRawEquation(String inputString) {
+		
 		EquationList<Variable> returnArray = new EquationList<Variable>();
 		Variable addedValue;
-		for (int i = 0; i < input.length(); i++) {
-			addedValue = new Variable (input.charAt(i));
-			if (Character.isLetter(input.charAt(i))) {
-				if (i != input.length() - 1 && input.charAt(i + 1) == '\'') {
-					addedValue = new Variable(input.charAt(i), true);
+		for (int i = 0; i < inputString.length(); i++) {
+			addedValue = new Variable (inputString.charAt(i));
+			if (Character.isLetter(inputString.charAt(i))) {
+				if (i != inputString.length() - 1 && inputString.charAt(i + 1) == '\'') {
+					addedValue = new Variable(inputString.charAt(i), true);
 					returnArray.add(addedValue);
 					i++;
 				} else {
-					addedValue = new Variable(input.charAt(i), false);
+					addedValue = new Variable(inputString.charAt(i), false);
 					returnArray.add(addedValue);
 				}
 				boolean isAVariable = false;
@@ -59,149 +76,165 @@ public class Equation {
 				returnArray.add(addedValue);
 			}
 		}
-		for (int i = returnArray.size() - 1; i >0; i--) {
-			if (Character.isLetter(returnArray.get(i).getCharValue()) && Character.isLetter(returnArray.get(i - 1).getCharValue())) {
-				returnArray.add(i, new Variable('*'));
-			} else if (returnArray.get(i).getCharValue() == '(' && returnArray.get(i - 1).getCharValue() == ')') {
-				returnArray.add(i, new Variable('*'));
-			} else if (returnArray.get(i).getCharValue() == '(' && Character.isLetter(returnArray.get(i - 1).getCharValue())) {
-				returnArray.add(i, new Variable('*'));
-			} else if (returnArray.get(i - 1).getCharValue() == ')' && Character.isLetter(returnArray.get(i).getCharValue())) {
-				returnArray.add(i, new Variable('*'));
-			}
-		}
-		System.out.println("Equation Successfully Parsed: " + returnArray);
 		return returnArray;
 	}
-
+	
+	private void addMultiplicationOperands(EquationList<Variable> inputEquation) {
+		
+		for (int i = inputEquation.size() - 1; i >0; i--) {
+			if (Character.isLetter(inputEquation.get(i).getCharValue()) && Character.isLetter(inputEquation.get(i - 1).getCharValue())) {
+				inputEquation.add(i, new Variable('*'));
+			} else if (inputEquation.get(i).getCharValue() == '(' && inputEquation.get(i - 1).getCharValue() == ')') {
+				inputEquation.add(i, new Variable('*'));
+			} else if (inputEquation.get(i).getCharValue() == '(' && Character.isLetter(inputEquation.get(i - 1).getCharValue())) {
+				inputEquation.add(i, new Variable('*'));
+			} else if (inputEquation.get(i - 1).getCharValue() == ')' && Character.isLetter(inputEquation.get(i).getCharValue())) {
+				inputEquation.add(i, new Variable('*'));
+			}
+		}
+	}
+	
 	public static boolean isParsable(String input) {
 		
-		System.out.println("Testing if String is Parsable..");
 		for (int i = 0; i < input.length(); i++) {
 			for (int j = 0; j < acceptedNonADNumbers.length; j++) {
 				if (!(input.charAt(i) == '+' || input.charAt(i) == '\'' || input.charAt(i) == '*' || input.charAt(i) == '(' || input.charAt(i) == ')' || Character.isAlphabetic(input.charAt(i)) || Character.isDigit(input.charAt(i)))) {
-					System.out.println("String is not parsable..");
 					return false;
 				}
-				
 			}
 		}
-		System.out.println("String is parsable..");
 		return true;
 	}
-	
-	public String binaryValue(int iteration) {
-		
-		System.out.println("Fetching Binary Value..");
-		String returnValue = Integer.toBinaryString(iteration);
-		while (returnValue.length() < knownVariables.size()) {
-			returnValue = "0" + returnValue;
-		}
-		System.out.println("Binary value is " + returnValue);
-		return returnValue;
-	}
-	
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  - - - - - - - - -
+
+//- - - OPERATE - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 	public EquationList<Variable> operate(EquationList<Variable> inputEquation) {
 		
 		EquationList<Variable> returnValue = inputEquation;
-		System.out.println("Beginning operation on " + returnValue);
-		Variable tempVariable;
 		while (hasOperator(returnValue, '*')) {
-			for (int i = 0; i < returnValue.size(); i++) {
-				if (returnValue.get(i).getCharValue() == '*') {
-					int product = 3;
-					if (returnValue.get(i - 1).getBitValue() == 0 || returnValue.get(i + 1).getBitValue() == 0) {
-						product = 0;
-					} else {
-						product = 1;
-					}
-					returnValue.removeRange((i - 1), (i + 2));
-					tempVariable = new Variable(product);
-					returnValue.add(i - 1, tempVariable);
-					System.out.println("Result after multiplication: " + returnValue);
-				}
-			}
-			
+			multiply(returnValue);
 		}
 		while(hasOperator(returnValue, '+')) {
-			for (int i = 0; i < returnValue.size(); i++) {
-				if (returnValue.get(i).getCharValue() == '+') {
-					int sum = 3;
-					if (returnValue.get(i - 1).getBitValue() == 0 && returnValue.get(i + 1).getBitValue() == 0) {
-						sum = 0;
-					} else {
-						sum = 1;
-					}
-					returnValue.removeRange((i - 1), (i + 2));
-					tempVariable = new Variable(sum);
-					returnValue.add(i - 1, tempVariable);
-					System.out.println("Result after addition: " + returnValue);
-				}
-			}
+			add(returnValue);
 		}
 		return returnValue;
 	}
 	
-//						solveForInputString FOR INPUT VALUES METHOD
+	private void multiply(EquationList<Variable> inputEquation) {
+		Variable tempVariable;
+		for (int i = 0; i < inputEquation.size(); i++) {
+			if (inputEquation.get(i).getCharValue() == '*') {
+				int product;
+				if (inputEquation.get(i - 1).getBitValue() == 0 || inputEquation.get(i + 1).getBitValue() == 0) {
+					product = 0;
+				} else {
+					product = 1;
+				}
+				inputEquation.removeRange((i - 1), (i + 2));
+				tempVariable = new Variable(product);
+				inputEquation.add(i - 1, tempVariable);
+			}
+		}
+	}
 	
-	public int solveForInputString(String inputVariables) {
+	private void add(EquationList<Variable> inputEquation) {
+		Variable tempVariable;
+		for (int i = 0; i < inputEquation.size(); i++) {
+			if (inputEquation.get(i).getCharValue() == '+') {
+				int sum = 3;
+				if (inputEquation.get(i - 1).getBitValue() == 0 && inputEquation.get(i + 1).getBitValue() == 0) {
+					sum = 0;
+				} else {
+					sum = 1;
+				}
+				inputEquation.removeRange((i - 1), (i + 2));
+				tempVariable = new Variable(sum);
+				inputEquation.add(i - 1, tempVariable);
+			}
+		}
+	}
+	
+	public boolean hasOperator(EquationList<Variable> insideEquation, char inputChar) {
+		
+		for (int i = 0; i < insideEquation.size(); i++) {
+			if (insideEquation.get(i).getCharValue() == inputChar) {
+				return true;
+			}
+		} 
+		return false;
+	}
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  - - - - - - - - -
+	
+//- - - SOLVE - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+	public int solve(String inputVariables) {
+		
 		String insideInputs = inputVariables;
 		@SuppressWarnings("unchecked")
 		EquationList<Variable> insideEquation = (EquationList<Variable>) currentEquation.clone();
-		System.out.println("Solving for equation " + insideEquation + ", and inputs: " + insideInputs);
-		
-		Integer inputInt;
-		
-		for (int i = 0; i < knownVariables.size(); i++) {
-			
-			inputInt = new Integer(Integer.parseInt(Character.toString(insideInputs.charAt(i))));
-			
-			knownVariables.get(i).setBitValue(inputInt);
-		}
-		System.out.println("Variable bit values set to: " + knownVariables.toString());
-		for (int i = 0; i < insideEquation.size(); i++) {
-			for (int j = 0; j < knownVariables.size(); j++) {
-				
-				if (insideEquation.get(i).getCharValue() == knownVariables.get(j).getCharValue()) {
-					if (insideEquation.get(i).isInverted()) {
-						System.out.println("Setting " + insideEquation.get(i));
-						insideEquation.get(i).setBitValue(knownVariables.get(j).getInverted());
-						System.out.println("Set and inverted to " + insideEquation.get(i));
-					} else {
-						System.out.println("Setting " + insideEquation.get(i));
-						insideEquation.get(i).setBitValue(knownVariables.get(j).getBitValue());
-						System.out.println("Set to " + insideEquation.get(i));
-					}
-				}
-			}
-		}
-		System.out.println("Equation after bitValue update: " + insideEquation);
-		System.out.println("Variables after bitValue update: " + knownVariables + "\n");
+		setVariableBitValues(insideInputs);
+		setEquationBitValues(insideEquation);
 		while (hasParentheses(insideEquation)) {
-			System.out.println("Checking for and solving parentheses in equation..");
-			int[] smallParentheses = smallestParentheses(insideEquation);
-			System.out.println(insideEquation);
-			insideEquation = solveParentheses(insideEquation, smallParentheses);
+			solveParentheses(insideEquation);
 		}
-		System.out.println("Equation to be operated after parentheses extraction: " + insideEquation);
 		insideEquation = operate(insideEquation);
-		for (int i = 0; i < knownVariables.size(); i++) {
-			knownVariables.get(i).reset();
-		}
 		if (insideEquation.get(0).getBitValue() == 1) {
 			minterms.add(insideInputs);
 		} else {
 			maxterms.add(insideInputs);
 		}
-	
 		return insideEquation.get(0).getBitValue();
 		
 	}
 	
-//						FIND AND solveForInputString PARENTHESIS
+	private void setVariableBitValues(String input) {
+		Integer inputInt;
+		for (int i = 0; i < knownVariables.size(); i++) {
+			inputInt = new Integer(Integer.parseInt(Character.toString(input.charAt(i))));	
+			knownVariables.get(i).setBitValue(inputInt);
+		}
+	}
 	
-	public int[] smallestParentheses(EquationList<Variable> insideEquation) {
-		System.out.println("Finding the inner-most parentheses..");
+	private void setEquationBitValues(EquationList<Variable> insideEquation) {
+		for (int i = 0; i < insideEquation.size(); i++) {
+			for (int j = 0; j < knownVariables.size(); j++) {
+				
+				if (insideEquation.get(i).getCharValue() == knownVariables.get(j).getCharValue()) {
+					if (insideEquation.get(i).isInverted()) {
+						insideEquation.get(i).setBitValue(knownVariables.get(j).getInverted());
+					} else {
+						insideEquation.get(i).setBitValue(knownVariables.get(j).getBitValue());
+					}
+				}
+			}
+		}
+	}
+	
+	public String binaryValue(int iteration) {
+		
+		String returnValue = Integer.toBinaryString(iteration);
+		while (returnValue.length() < knownVariables.size()) {
+			returnValue = "0" + returnValue;
+		}
+		return returnValue;
+	}
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  - - - - - - - - -
+	
+//- - - PARENTHESES - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+	private EquationList<Variable> solveParentheses(EquationList<Variable> insideEquation) {
+		
+		int[] smallParentheses = smallestParentheses(insideEquation);
+		@SuppressWarnings("unchecked") EquationList<Variable> returnArray = (EquationList<Variable>) insideEquation.clone();
+		EquationList<Variable> equateableValues = returnArray.subList(smallParentheses[0] + 1, smallParentheses[1]);
+		equateableValues = operate(equateableValues);
+		returnArray.removeRange(smallParentheses[0], (smallParentheses[1] + 1));
+		for (int i = 0; i < equateableValues.size(); i++) {
+			returnArray.add((smallParentheses[0]), equateableValues.get(i));
+		}		
+		return returnArray;
+	}
+	
+	private int[] smallestParentheses(EquationList<Variable> insideEquation) {
+		
 		int[] returnParentheses = {-1, -1};
 		int maxLevel = 0;
 		int level = 0;
@@ -227,36 +260,11 @@ public class Equation {
 				}
 			}
 		}
-		System.out.println("Inner-most parentheses are: " + returnParentheses[0] + ", " + returnParentheses[1]);
 		return returnParentheses;
 	}
 	
-	public EquationList<Variable> solveParentheses(EquationList<Variable> insideEquation, int[] pSubstring) {
-		
-		@SuppressWarnings("unchecked")
-		EquationList<Variable> returnArray = (EquationList<Variable>) insideEquation.clone();
-		EquationList<Variable> equateableValues = returnArray.subList(pSubstring[0] + 1, pSubstring[1]);
-		equateableValues = operate(equateableValues);
-		returnArray.removeRange(pSubstring[0], (pSubstring[1] + 1));
-		for (int i = 0; i < equateableValues.size(); i++) {
-			returnArray.add((pSubstring[0]), equateableValues.get(i));
-		}
-		
-		return returnArray;
-	}
-	
-//						BOOLEAN TESTER METHODS
-	
-	public boolean hasOperator(EquationList<Variable> insideEquation, char inputChar) {
-		for (int i = 0; i < insideEquation.size(); i++) {
-			if (insideEquation.get(i).getCharValue() == inputChar) {
-				return true;
-			}
-		} 
-		return false;
-	}
-	
 	private boolean hasParentheses(EquationList<Variable> insideEquation) {
+		
 		for (int i=0;i<insideEquation.size();i++) {
 			if (insideEquation.get(i).getCharValue() == '(' || insideEquation.get(i).getCharValue() == ')') {
 				return true;
@@ -264,8 +272,11 @@ public class Equation {
 		}
 		return false;
 	}
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  - - - - - - - - -
 	
+//- - - CONONICAL EQUATIONS - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 	public String canonicalSOP() {
+		
 		String returnString = "";
 		for (int i = 0; i < minterms.size(); i++) {
 			for (int j = 0; j < knownVariables.size(); j++) {
@@ -283,6 +294,7 @@ public class Equation {
 	}
 	
 	public String canonicalPOS() {
+		
 		String returnString = "";
 		for (int i = 0; i < maxterms.size(); i++) {
 			returnString += "(";
@@ -304,4 +316,5 @@ public class Equation {
 		}
 		return returnString;
 	}
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  - - - - - - - - -
 }

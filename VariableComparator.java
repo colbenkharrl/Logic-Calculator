@@ -1,3 +1,5 @@
+//	Colben Kharrl, March 18, 2016. Truth Table Generator.
+
 import java.util.Comparator;
 
 public class VariableComparator implements Comparator<Variable> {

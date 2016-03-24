@@ -1,3 +1,5 @@
+//	Colben Kharrl, March 18, 2016. Truth Table Generator.
+
 import java.util.*;
 
 public class EquationList<E> extends ArrayList<E> {

@@ -1,3 +1,5 @@
+//	Colben Kharrl, March 18, 2016. Truth Table Generator.
+
 import java.awt.Color;
 import javax.swing.*;
 import javax.swing.border.*;
@@ -7,7 +9,7 @@ public class JTLabel extends JLabel {
 	public JTLabel(String title, Color backgroundColor, Color textColor) {
 		super(title);
 		setHorizontalAlignment(JLabel.CENTER);
-		setBorder(BorderFactory.createEtchedBorder(EtchedBorder.RAISED));
+		setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
 		setOpaque(true);
 		setBackground(backgroundColor);
 		setForeground(textColor);
