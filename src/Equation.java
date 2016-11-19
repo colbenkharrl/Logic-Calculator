@@ -174,7 +174,7 @@ public class Equation {
 		setVariableBitValues(insideInputs);
 		setEquationBitValues(insideEquation);
 		while (hasParentheses(insideEquation)) {
-			solveParentheses(insideEquation);
+			insideEquation = solveParentheses(insideEquation);
 		}
 		insideEquation = operate(insideEquation);
 		if (insideEquation.get(0).getBitValue() == 1) {
